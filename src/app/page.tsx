@@ -61,7 +61,7 @@ export default function LoginPage() {
                 <Input
                   id="address"
                   type="url"
-                  placeholder="例如：http://localhost:8080 或 tcp://127.0.0.1:2552"
+                  placeholder="例如：http://localhost:15800"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="border-[var(--vivid-gold-muted)]/50 focus-visible:ring-[var(--vivid-gold-muted)]"

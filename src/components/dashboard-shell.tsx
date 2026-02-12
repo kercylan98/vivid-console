@@ -2,24 +2,97 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { LayoutDashboard, Server, LogOut } from 'lucide-react';
+import { LayoutDashboard, LogOut, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useConnectionStatus } from '@/hooks/use-connection-status';
 
 const navItems = [
   { href: '/dashboard', label: '仪表盘', icon: LayoutDashboard },
+  { href: '/dashboard/performance', label: '性能分析', icon: BarChart3 },
 ];
+
+function StatusDot({ status }: { status: 'idle' | 'loading' | 'ok' | 'error' }) {
+  const dotClass =
+    status === 'ok'
+      ? 'status-dot status-dot--connected'
+      : status === 'loading'
+        ? 'status-dot status-dot--loading'
+        : status === 'error'
+          ? 'status-dot status-dot--error'
+          : 'status-dot status-dot--disconnected';
+  return <span className={dotClass} aria-hidden />;
+}
+
+function HeaderConnectionLabel() {
+  const conn = useConnectionStatus();
+
+  if (conn.status === 'idle') {
+    return (
+      <div className="flex items-center gap-2.5">
+        <StatusDot status="idle" />
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          —
+        </span>
+        <span className="text-muted-foreground">未配置</span>
+      </div>
+    );
+  }
+  if (conn.status === 'loading') {
+    return (
+      <div className="flex items-center gap-2.5">
+        <StatusDot status="loading" />
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          —
+        </span>
+        <span className="truncate max-w-[220px] text-muted-foreground" title={conn.address}>
+          {conn.address}
+        </span>
+        <span className="text-muted-foreground/80 text-xs">连接中…</span>
+      </div>
+    );
+  }
+  if (conn.status === 'error') {
+    return (
+      <div className="flex items-center gap-2.5">
+        <StatusDot status="error" />
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          —
+        </span>
+        <span className="truncate max-w-[220px]" title={conn.message ?? conn.address}>
+          {conn.address}
+        </span>
+        <span className="text-destructive/90 text-xs">连接异常</span>
+      </div>
+    );
+  }
+  const isCluster = conn.cluster.isClusterNode;
+  return (
+    <div className="flex items-center gap-2.5">
+      <StatusDot status="ok" />
+      <span
+        className={cn(
+          'rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider',
+          isCluster
+            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+            : 'bg-zinc-500/15 text-zinc-500 dark:text-zinc-400'
+        )}
+      >
+        {isCluster ? 'Cluster' : 'Standalone'}
+      </span>
+      <span
+        className="truncate max-w-[240px] text-muted-foreground"
+        title={conn.address}
+      >
+        {conn.address}
+      </span>
+    </div>
+  );
+}
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [connectionAddress, setConnectionAddress] = useState<string | null>(null);
-
-  useEffect(() => {
-    const addr = typeof window !== 'undefined' ? sessionStorage.getItem('vivid-console-address') : null;
-    setConnectionAddress(addr);
-  }, []);
 
   const handleLogout = () => {
     sessionStorage.removeItem('vivid-console-address');
@@ -66,17 +139,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* 主内容区 */}
       <div className="flex flex-1 flex-col pl-56">
-        {/* 顶栏 */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b border-[var(--vivid-gold-muted)]/30 bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Server className="size-4" style={{ color: 'var(--vivid-gold-muted)' }} />
-            {connectionAddress ? (
-              <span className="truncate max-w-[280px]" title={connectionAddress}>
-                {connectionAddress}
-              </span>
-            ) : (
-              <span>未连接</span>
-            )}
+          <div className="flex items-center gap-2 text-sm">
+            <HeaderConnectionLabel />
           </div>
           <Button
             variant="ghost"

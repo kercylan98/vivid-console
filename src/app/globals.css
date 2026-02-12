@@ -138,4 +138,67 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* 全局滚动条：细轨 + 圆角金调 thumb，与主题一致 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--vivid-gold-muted) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--vivid-gold-muted);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--vivid-gold);
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* 顶栏连接状态点：绿=已连接，灰=未连接，带波动光效 */
+@keyframes status-dot-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 4px currentColor;
+    opacity: 0.85;
+  }
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot--connected {
+  color: #22c55e;
+  background-color: #22c55e;
+  animation: status-dot-pulse 2s ease-in-out infinite;
+}
+.status-dot--disconnected {
+  color: #71717a;
+  background-color: #71717a;
+  opacity: 0.7;
+}
+.status-dot--loading {
+  color: var(--vivid-gold);
+  background-color: var(--vivid-gold);
+  animation: status-dot-pulse 1.2s ease-in-out infinite;
+}
+.status-dot--error {
+  color: #ef4444;
+  background-color: #ef4444;
+  animation: status-dot-pulse 2s ease-in-out infinite;
 }
